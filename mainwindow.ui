@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Curve Viewer</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -65,7 +65,14 @@
      </widget>
     </item>
     <item>
-     <widget class="QCustomPlot" name="customPlot">
+     <widget class="QPushButton" name="swapButton">
+      <property name="text">
+       <string>Swap Curves</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QCustomPlot" name="customPlot" native="true">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>0</horstretch>
@@ -78,6 +85,13 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QCustomPlot</class>
+   <extends>QWidget</extends>
+   <header>qcustomplot.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

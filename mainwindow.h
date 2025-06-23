@@ -20,6 +20,7 @@ private slots:
     void on_browseButton1_clicked();
     void on_browseButton2_clicked();
     void on_plotButton_clicked();
+    void on_swapButton_clicked();
 
 private:
     Ui::MainWindow *ui;
