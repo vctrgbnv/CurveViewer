@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    setWindowIcon(QIcon(":/icons/icon.png"));
     // Настройка графика
     ui->customPlot->addGraph(); // Graph 0: Curve 1
     ui->customPlot->addGraph(); // Graph 1: Curve 2 (non-overlapping)
@@ -73,11 +73,13 @@ void MainWindow::on_plotButton_clicked()
     ui->customPlot->graph(0)->data()->clear();
     ui->customPlot->graph(1)->data()->clear();
     ui->customPlot->graph(2)->data()->clear();
-
+    // Извлечение имен файлов
+    QString fileName1 = ui->file1Edit->text().isEmpty() ? "Curve 1" : QFileInfo(ui->file1Edit->text()).baseName();
+    QString fileName2 = ui->file2Edit->text().isEmpty() ? "Curve 2" : QFileInfo(ui->file2Edit->text()).baseName();
     // Установка данных для первого графика
     if (!x1.isEmpty()) {
         ui->customPlot->graph(0)->setData(x1, y1);
-        ui->customPlot->graph(0)->setName("Curve 1");
+        ui->customPlot->graph(0)->setName(fileName1);
         ui->customPlot->graph(0)->setPen(QPen(Qt::blue));
     }
 
@@ -104,12 +106,12 @@ void MainWindow::on_plotButton_clicked()
 
         // График для неперекрывающихся участков
         ui->customPlot->graph(1)->setData(x2_non_overlap, y2_non_overlap);
-        ui->customPlot->graph(1)->setName("Curve 2 (non-overlapping)");
+        ui->customPlot->graph(1)->setName(fileName2);
         ui->customPlot->graph(1)->setPen(QPen(Qt::red));
 
         // График для перекрывающихся участков
         ui->customPlot->graph(2)->setData(x2_overlap, y2_overlap);
-        ui->customPlot->graph(2)->setName("Curve 2 (overlapping)");
+        ui->customPlot->graph(2)->setName(fileName2 + "(overlapping)");
         ui->customPlot->graph(2)->setPen(QPen(Qt::red, 0, Qt::DashLine));
     } else if (!x2.isEmpty()) {
         ui->customPlot->graph(1)->setData(x2, y2);
@@ -122,23 +124,23 @@ void MainWindow::on_plotButton_clicked()
     ui->customPlot->replot();
 }
 void MainWindow::on_swapButton_clicked()
-{
-    // Смена приоритета кривых
+{   qDebug() << "Swap button clicked";
     auto data0 = ui->customPlot->graph(0)->data();
     auto data1 = ui->customPlot->graph(1)->data();
     auto data2 = ui->customPlot->graph(2)->data();
 
-    // Меняем местами первую кривую и неперекрывающуюся часть второй
     ui->customPlot->graph(0)->setData(data1);
     ui->customPlot->graph(1)->setData(data0);
-    ui->customPlot->graph(2)->setData(data2); // Перекрывающаяся часть остается
+    ui->customPlot->graph(2)->setData(data2);
 
-    // Обновление имен и стилей
-    ui->customPlot->graph(0)->setName("Curve 2 (non-overlapping)");
+    QString fileName1 = ui->file1Edit->text().isEmpty() ? "Curve 1" : QFileInfo(ui->file1Edit->text()).baseName();
+    QString fileName2 = ui->file2Edit->text().isEmpty() ? "Curve 2" : QFileInfo(ui->file2Edit->text()).baseName();
+
+    ui->customPlot->graph(0)->setName(fileName2 + " (non-overlapping)");
     ui->customPlot->graph(0)->setPen(QPen(Qt::red));
-    ui->customPlot->graph(1)->setName("Curve 1");
+    ui->customPlot->graph(1)->setName(fileName1);
     ui->customPlot->graph(1)->setPen(QPen(Qt::blue));
-    ui->customPlot->graph(2)->setName("Curve 2 (overlapping)");
+    ui->customPlot->graph(2)->setName(fileName2 + " (overlapping)");
     ui->customPlot->graph(2)->setPen(QPen(Qt::red, 0, Qt::DashLine));
 
     ui->customPlot->replot();
