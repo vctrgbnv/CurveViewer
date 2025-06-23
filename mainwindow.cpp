@@ -96,7 +96,7 @@ void MainWindow::on_plotButton_clicked()
 
                 for (int i = 0; i < x2.size(); ++i) {
                     //double y1_interp = interpolate(x1, y1, x2[i]);
-                    if (y2[i] < y1[i]) {// \\i < x1.size
+                    if (i < x1.size() && y2[i] < y1[i]) {
                         // Y2 < Y1 и X2 в диапазоне X1 — перекрытие (пунктир)
                         x2_overlap.append(x2[i]);
                         y2_overlap.append(y2[i]);
