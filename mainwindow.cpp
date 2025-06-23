@@ -84,66 +84,54 @@ void MainWindow::on_plotButton_clicked()
     }
 
     // Установка данных для второго графика
-    if (!x2.isEmpty() && !x1.isEmpty()) {
-        QVector<double> x2_overlap, y2_overlap, x2_non_overlap, y2_non_overlap;
-        const double epsilon = 1e-5; // Погрешность для сравнения
+        if (!x2.isEmpty()) {
+            if (x1.isEmpty()) {
+                // Если первой кривой нет, вся вторая кривая сплошная
+                ui->customPlot->graph(1)->setData(x2, y2);
+                ui->customPlot->graph(1)->setName(fileName2);
+                ui->customPlot->graph(1)->setPen(QPen(Qt::red));
+            } else {
+                // Разделение второй кривой на перекрывающиеся и неперекрывающиеся участки
+                QVector<double> x2_overlap, y2_overlap, x2_non_overlap, y2_non_overlap;
 
-        // Предполагаем, что x1 и x2 совпадают
-        if (x1.size() == x2.size()) {
-            for (int i = 0; i < x1.size(); ++i) {
-                if (std::abs(y1[i] - y2[i]) < epsilon) {
-                    x2_overlap.append(x2[i]);
-                    y2_overlap.append(y2[i]);
-                } else {
-                    x2_non_overlap.append(x2[i]);
-                    y2_non_overlap.append(y2[i]);
+                for (int i = 0; i < x2.size(); ++i) {
+                    //double y1_interp = interpolate(x1, y1, x2[i]);
+                    if (y2[i] < y1[i]) {// \\i < x1.size
+                        // Y2 < Y1 и X2 в диапазоне X1 — перекрытие (пунктир)
+                        x2_overlap.append(x2[i]);
+                        y2_overlap.append(y2[i]);
+                    } else {
+                        // Y2 >= Y1 или X2 вне диапазона X1 — нет перекрытия (сплошная)
+                        x2_non_overlap.append(x2[i]);
+                        y2_non_overlap.append(y2[i]);
+                    }
                 }
+
+                // График для неперекрывающихся участков (сплошная линия)
+                ui->customPlot->graph(1)->setData(x2_non_overlap, y2_non_overlap);
+                ui->customPlot->graph(1)->setName(fileName2);
+                ui->customPlot->graph(1)->setPen(QPen(Qt::red));
+
+                // График для перекрывающихся участков (пунктир)
+                ui->customPlot->graph(2)->setData(x2_overlap, y2_overlap);
+                ui->customPlot->graph(2)->setName(fileName2 + " (overlapping)");
+                ui->customPlot->graph(2)->setPen(QPen(Qt::red, 0, Qt::DashLine));
             }
-        } else {
-            QMessageBox::warning(this, "Error", "Curves must have the same x values");
-            return;
         }
-
-        // График для неперекрывающихся участков
-        ui->customPlot->graph(1)->setData(x2_non_overlap, y2_non_overlap);
-        ui->customPlot->graph(1)->setName(fileName2);
-        ui->customPlot->graph(1)->setPen(QPen(Qt::red));
-
-        // График для перекрывающихся участков
-        ui->customPlot->graph(2)->setData(x2_overlap, y2_overlap);
-        ui->customPlot->graph(2)->setName(fileName2 + "(overlapping)");
-        ui->customPlot->graph(2)->setPen(QPen(Qt::red, 0, Qt::DashLine));
-    } else if (!x2.isEmpty()) {
-        ui->customPlot->graph(1)->setData(x2, y2);
-        ui->customPlot->graph(1)->setName("Curve 2");
-        ui->customPlot->graph(1)->setPen(QPen(Qt::red));
-    }
 
     // Автомасштабирование и перерисовка
     ui->customPlot->rescaleAxes();
     ui->customPlot->replot();
 }
 void MainWindow::on_swapButton_clicked()
-{   qDebug() << "Swap button clicked";
-    auto data0 = ui->customPlot->graph(0)->data();
-    auto data1 = ui->customPlot->graph(1)->data();
-    auto data2 = ui->customPlot->graph(2)->data();
+{
+    // 1) Меняем местами тексты в полях выбора файлов
+    QString tmp = ui->file1Edit->text();
+    ui->file1Edit->setText(ui->file2Edit->text());
+    ui->file2Edit->setText(tmp);
 
-    ui->customPlot->graph(0)->setData(data1);
-    ui->customPlot->graph(1)->setData(data0);
-    ui->customPlot->graph(2)->setData(data2);
-
-    QString fileName1 = ui->file1Edit->text().isEmpty() ? "Curve 1" : QFileInfo(ui->file1Edit->text()).baseName();
-    QString fileName2 = ui->file2Edit->text().isEmpty() ? "Curve 2" : QFileInfo(ui->file2Edit->text()).baseName();
-
-    ui->customPlot->graph(0)->setName(fileName2 + " (non-overlapping)");
-    ui->customPlot->graph(0)->setPen(QPen(Qt::red));
-    ui->customPlot->graph(1)->setName(fileName1);
-    ui->customPlot->graph(1)->setPen(QPen(Qt::blue));
-    ui->customPlot->graph(2)->setName(fileName2 + " (overlapping)");
-    ui->customPlot->graph(2)->setPen(QPen(Qt::red, 0, Qt::DashLine));
-
-    ui->customPlot->replot();
+    // 2) Перестраиваем график «по-новой»
+    on_plotButton_clicked();
 }
 bool MainWindow::readDataFromFile(const QString& fileName, QVector<double>& x, QVector<double>& y)
 {
